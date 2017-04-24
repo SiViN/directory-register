@@ -33,20 +33,26 @@ class AutoRegisterExtension extends Nette\DI\CompilerExtension
 
 		$builder = $this->getContainerBuilder();
 
-		foreach ($config['dirs'] as $namespace => $dir) {
-			if (is_dir($dir)) {
-				foreach (Finder::findFiles('*.php')->in($dir) as $key => $file) {
-					$class = $file->getBasename('.php');
+		foreach ($config['dirs'] as $namespace => $dirs) {
+			if (!is_array($dirs))
+			{
+				$dirs = [$dirs];
+			}
+			foreach ($dirs as $dir) {
+				if (is_dir($dir)) {
+					foreach (Finder::findFiles('*.php')->in($dir) as $key => $file) {
+						$class = $file->getBasename('.php');
 
-					$refletion = new \ReflectionClass("$namespace\\$class");
+						$refletion = new \ReflectionClass("$namespace\\$class");
 
-					if (in_array($refletion->getName(), $config['skip'])) {
-						continue;
-					}
+						if (in_array($refletion->getName(), $config['skip'])) {
+							continue;
+						}
 
-					if ($refletion->isInstantiable()) {
-						$builder->addDefinition($class)
-							->setClass($refletion->getName());
+						if ($refletion->isInstantiable()) {
+							$builder->addDefinition($class)
+								->setClass($refletion->getName());
+						}
 					}
 				}
 			}
